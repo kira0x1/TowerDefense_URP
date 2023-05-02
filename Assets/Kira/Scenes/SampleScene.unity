@@ -432,7 +432,14 @@ MonoBehaviour:
   roadColor: {r: 1, g: 0, b: 0.1333332, a: 1}
   villageColor: {r: 0, g: 1, b: 0.2328887, a: 1}
   branchColor: {r: 1, g: 0.7372597, b: 0.11792451, a: 1}
-  roadChunks: []
+  roadPlans:
+  - startPosition: {x: -6.5, y: 0, z: -2.5}
+    startAtLastEnd: 0
+    randomizeLength: 0
+    startX: 0
+    startY: 0
+    maxWidth: 1
+    maxLength: 14
 --- !u!1 &832575517
 GameObject:
   m_ObjectHideFlags: 0

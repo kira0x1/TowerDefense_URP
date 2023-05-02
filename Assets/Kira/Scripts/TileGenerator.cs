@@ -42,8 +42,9 @@ namespace Kira
         private List<Tile> tiles;
         private List<Tile> roadTiles;
 
+        private List<RoadChunk> roadChunks = new List<RoadChunk>();
         [SerializeField]
-        private List<RoadChunk> roadChunks;
+        private List<RoadChunkPlan> roadPlans = new List<RoadChunkPlan>();
 
         private void OnValidate()
         {
@@ -74,10 +75,24 @@ namespace Kira
             return villageIndex;
         }
 
-        private void GenerateRoad(int startX, int startY, int maxX, int maxY)
+        [ContextMenu("Generate Roads")]
+        private void GenerateRoadsFromPlan()
+        {
+            roadChunks = new List<RoadChunk>();
+
+            Vector3 startPosition = GetStartPosition();
+            foreach (RoadChunkPlan plan in roadPlans)
+            {
+                plan.startPosition = startPosition;
+                RoadChunk roadChunk = plan.CreateRoad();
+                roadChunks.Add(roadChunk);
+            }
+        }
+
+        private void GenerateRoad(int startX, int startY, int maxX, int maxY, bool randomize)
         {
             Vector3 startPosition = GetStartPosition();
-            RoadChunk roadChunk = new RoadChunk(startX, startY, startPosition, maxX, maxY);
+            RoadChunk roadChunk = new RoadChunk(startX, startY, startPosition, maxX, maxY, randomize);
             roadChunks.Add(roadChunk);
         }
 
@@ -122,30 +137,30 @@ namespace Kira
 
                     Tile tile = new Tile(x, y);
 
-                    // if (x == gridWidth / 2 && y == villageIndex)
-                    // {
-                    //     tile.tileType = TileType.VillageTile;
-                    // }
-                    // else if (x == gridWidth / 2 && y >= villageIndex + 1)
-                    // {
-                    //     tile.tileType = TileType.RoadTile;
-                    // }
+                    if (x == gridWidth / 2 && y == villageIndex)
+                    {
+                        tile.tileType = TileType.VillageTile;
+                    }
+                    else if (x == gridWidth / 2 && y >= villageIndex + 1)
+                    {
+                        tile.tileType = TileType.RoadTile;
+                    }
 
                     tile.worldPosition = pos;
-                    // tiles[x, y] = tile;
-                    // tiles.Add(tile);
+                    tiles.Add(tile);
+                    tiles.Add(tile);
                 }
             }
 
             // CreateBranch(gridWidth / 2, villageIndex + 1);
 
-            if (roadChunks.Count < 2)
-            {
-                roadChunks = new List<RoadChunk>();
-                GenerateRoad(0, villageIndex + 2, gridWidth, villageIndex + 3);
-                Tile lastRoadTile = roadChunks[0].roadTiles[^1];
-                GenerateRoad(lastRoadTile.x + 1, lastRoadTile.y, lastRoadTile.x + 2, gridLength);
-            }
+            // if (roadChunks.Count < 2)
+            // {
+            //     roadChunks = new List<RoadChunk>();
+            //     GenerateRoad( 0, villageIndex + 2, gridWidth, villageIndex + 3);
+            //     Tile lastRoadTile = roadChunks[0].roadTiles[^1];
+            //     GenerateRoad( lastRoadTile.x + 1, lastRoadTile.y, lastRoadTile.x + 2, gridLength);
+            // }
         }
 
         private void CreateBranch(int startX, int startY)

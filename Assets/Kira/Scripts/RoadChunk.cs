@@ -1,12 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using Random = UnityEngine.Random;
 
 namespace Kira
 {
-    [Serializable]
     public class RoadChunk
     {
         public List<Tile> roadTiles;
@@ -15,14 +12,13 @@ namespace Kira
         public readonly int startY;
         public readonly Bounds bounds;
 
-        public RoadChunk(int startX, int startY, Vector3 startPosition, int maxWidth, int maxLength)
+        public RoadChunk(int startX, int startY, Vector3 startPosition, int maxWidth, int maxLength, bool randomize)
         {
             this.startX = startX;
             this.startY = startY;
             this.startPosition = startPosition;
 
-            CreateRoad(maxLength, maxWidth);
-
+            CreateRoad(maxLength, maxWidth, randomize);
 
             Tile lastTile = roadTiles[^1];
             Vector3 lastPos = lastTile.worldPosition;
@@ -40,15 +36,15 @@ namespace Kira
             bounds = new Bounds(center, size);
         }
 
-        private void CreateRoad(int maxLength, int maxWidth)
+        private void CreateRoad(int maxLength, int maxWidth, bool randomize)
         {
             roadTiles = new List<Tile>();
 
             int minLength = Mathf.Min(startY + 2, maxLength);
-            int roadLength = Random.Range(minLength, maxLength);
+            int roadLength = randomize ? Random.Range(minLength, maxLength) : maxLength;
 
             int minWidth = Mathf.Min(startX + 2, maxWidth);
-            int roadWidth = Random.Range(minWidth, maxWidth);
+            int roadWidth = randomize ? Random.Range(minWidth, maxWidth) : maxWidth;
 
             Vector3 branchPos = startPosition;
             branchPos.z += startY;
