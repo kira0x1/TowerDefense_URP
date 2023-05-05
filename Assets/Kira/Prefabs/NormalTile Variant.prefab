@@ -12,7 +12,7 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Materials.Array.data[0]
       value: 
-      objectReference: {fileID: 2100000, guid: b45a15fff385e4a46ab2bf7a9b0214e8, type: 2}
+      objectReference: {fileID: 2100000, guid: d25d1267cb84a5e4aaa70afbd41b6022, type: 2}
     - target: {fileID: 6803300423933988414, guid: 02c7fdd1ca6f0a945b0fe80e62da4555,
         type: 3}
       propertyPath: m_RootOrder
@@ -86,7 +86,7 @@ PrefabInstance:
     - target: {fileID: 8110872148274224248, guid: 02c7fdd1ca6f0a945b0fe80e62da4555,
         type: 3}
       propertyPath: m_Name
-      value: GrassTile Variant
+      value: NormalTile Variant
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

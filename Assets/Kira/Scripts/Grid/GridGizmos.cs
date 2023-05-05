@@ -63,11 +63,11 @@ namespace Kira.GridGen
             if (gizmoMesh == null)
                 return;
 
-            Tile[,] tiles = tileGenerator.tiles;
 
             if (previewType == PreviewType.Grid)
             {
                 grid = tileGenerator.CreateGrid();
+                Tile[,] tiles = grid.tiles;
                 IEnumerable<Tile> tilesArray = tiles.Cast<Tile>();
                 tilesArray = tilesArray as Tile[] ?? tilesArray.ToArray();
                 DrawTileGizmo(tilesArray, tileGenerator.cellSize);
@@ -107,20 +107,6 @@ namespace Kira.GridGen
 
             Gizmos.DrawLine(grid.GetWorldPosition(0, grid.height), grid.GetWorldPosition(grid.width, grid.height));
             Gizmos.DrawLine(grid.GetWorldPosition(grid.width, 0), grid.GetWorldPosition(grid.width, grid.height));
-
-            /*foreach (Tile tile in tiles)
-            {
-                Vector3 pos = tile.worldPosition;
-                Vector3 pos1 = new Vector3(pos.x - 0.5f, pos.y, pos.z - 0.5f);
-                Vector3 pos2 = new Vector3(pos.x + 0.5f, pos.y, pos.z - 0.5f);
-                Vector3 pos3 = new Vector3(pos.x - 0.5f, pos.y, pos.z + 0.5f);
-                Vector3 pos4 = new Vector3(pos.x + 0.5f, pos.y, pos.z + 0.5f);
-                Gizmos.color = gridColor * gridAlphaMultiplier;
-                Gizmos.DrawLine(pos1, pos2);
-                Gizmos.DrawLine(pos2, pos4);
-                Gizmos.DrawLine(pos1, pos3);
-                Gizmos.DrawLine(pos3, pos4);
-            }*/
         }
     }
 }

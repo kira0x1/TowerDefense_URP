@@ -58,8 +58,7 @@ namespace Kira
                     pos.x += x;
                     pos.z += y;
 
-                    Tile tile = new Tile(x, y);
-                    tile.tileType = TileType.RoadTile;
+                    Tile tile = new Tile(x, y, TileType.RoadTile);
                     if (y == startY && x == startX) tile.tileType = TileType.BranchTile;
                     tile.worldPosition = pos;
                     roadTiles.Add(tile);

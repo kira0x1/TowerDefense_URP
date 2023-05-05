@@ -7,24 +7,28 @@ namespace Kira.GridGen
         public readonly int width;
         public readonly int height;
         private readonly float cellSize;
-        private readonly Tile[,] gridValues;
+        public Tile[,] tiles;
         private readonly TextMesh[,] gridText;
-        private readonly GameObject[,] gridMesh;
         private readonly Vector3 originPos;
         private readonly int fontSize;
         private readonly bool spawnText;
+        private readonly bool centerY;
+        private readonly int villageOffset;
 
-        public Grid(int width, int height, float cellSize, int fontSize, Vector3 originPos)
+        public Grid(int width, int height, float cellSize, int fontSize, Vector3 originPos, bool centerY, int villageOffset)
         {
             this.width = width;
             this.height = height;
             this.cellSize = cellSize;
             this.fontSize = fontSize;
             this.originPos = originPos;
+            this.centerY = centerY;
+            this.villageOffset = villageOffset;
 
-            gridValues = new Tile[width, height];
+            tiles = new Tile[width, height];
             gridText = new TextMesh[width, height];
-            gridMesh = new GameObject[width, height];
+
+            GenerateTiles();
         }
 
         public void SpawnText(Transform parent, Quaternion rotation)
@@ -32,50 +36,66 @@ namespace Kira.GridGen
             Transform textParent = new GameObject("Grid Text").transform;
             textParent.SetParent(parent);
 
-            for (int x = 0; x < gridValues.GetLength(0); x++)
+            for (int x = 0; x < tiles.GetLength(0); x++)
             {
-                for (int y = 0; y < gridValues.GetLength(1); y++)
+                for (int y = 0; y < tiles.GetLength(1); y++)
                 {
                     Vector3 pos = GetWorldPosition(x, y) + new Vector3(cellSize, 0, cellSize) * 0.5f;
 
-                    TextMesh text = GridUtils.CreateWorldText(gridValues[x, y].ToString(), textParent, pos, fontSize, Color.white);
+                    TextMesh text = GridUtils.CreateWorldText(tiles[x, y].ToString(), textParent, pos, fontSize, Color.white);
                     text.transform.rotation = rotation;
                     gridText[x, y] = text;
                 }
             }
         }
 
-        public void SpawnGrid(TileGenerator tileGenerator, Transform parent, Quaternion rotation)
+        private int GetVillageY()
         {
-            Transform tileParent = new GameObject("Grid Tiles").transform;
-            tileParent.SetParent(parent);
+            int villageIndex = centerY ? height / 2 : 0;
+            villageIndex += villageOffset;
+            return villageIndex;
+        }
 
-            for (int x = 0; x < gridValues.GetLength(0); x++)
+
+        public void GenerateTiles()
+        {
+            tiles = new Tile[width, height];
+
+            Vector3 startPosition = originPos;
+            startPosition.x += cellSize / 2f;
+            startPosition.z += cellSize / 2f;
+
+            int villageIndex = GetVillageY();
+
+            for (int y = 0; y < height; y++)
             {
-                for (int y = 0; y < gridValues.GetLength(1); y++)
+                for (int x = 0; x < width; x++)
                 {
-                    Vector3 pos = GetWorldPosition(x, y) + new Vector3(cellSize, 0, cellSize) * 0.5f;
+                    bool isRoadTile = x == width / 2 && y >= villageIndex + 1;
+                    bool isVillageTile = x == width / 2 && y == villageIndex;
 
-                    Vector3 tilePos = pos;
-                    tilePos.y -= 0.5f;
-                    Tile tile = tileGenerator.tiles[x, y];
-                    var rot = rotation;
-                    GameObject tilePrefab = tileGenerator.grassTilePrefab;
+                    Vector3 pos = startPosition;
+                    pos.x += x * cellSize;
+                    pos.z += y * cellSize;
 
-                    if (tile.tileType == TileType.RoadTile)
+                    TileType tileType = TileType.BuildingTile;
+
+                    if (isRoadTile)
                     {
-                        tilePrefab = tileGenerator.roadTilePrefab;
+                        tileType = TileType.RoadTile;
                     }
-                    else if (tile.tileType == TileType.VillageTile)
+                    else if (isVillageTile)
                     {
-                        tilePrefab = tileGenerator.roadTilePrefab;
-                        GameObject villageMesh = Object.Instantiate(tileGenerator.villageOrnament, tilePos, Quaternion.identity, tileParent);
-                        villageMesh.transform.localScale = Vector3.one * cellSize * 0.15f;
+                        tileType = TileType.VillageTile;
+                    }
+                    else if (x == width / 2 && y >= villageIndex + 1)
+                    {
+                        tileType = TileType.RoadTile;
                     }
 
-                    GameObject tileMesh = Object.Instantiate(tilePrefab, tilePos, rot, tileParent);
-                    tileMesh.transform.localScale = Vector3.one * cellSize;
-                    gridMesh[x, y] = tileMesh;
+                    Tile tile = new Tile(x, y, tileType);
+                    tile.worldPosition = pos;
+                    tiles[x, y] = tile;
                 }
             }
         }
@@ -88,7 +108,7 @@ namespace Kira.GridGen
         private void GetXY(Vector3 worldPosition, out int x, out int y)
         {
             x = Mathf.FloorToInt((worldPosition - originPos).x / cellSize);
-            y = Mathf.FloorToInt((worldPosition - originPos).y / cellSize);
+            y = Mathf.FloorToInt((worldPosition - originPos).z / cellSize);
         }
 
         public void SetTile(int x, int y, Tile tile)
@@ -96,7 +116,7 @@ namespace Kira.GridGen
             if (x < 0 || y < 0) return;
             if (x >= width || y >= height) return;
 
-            gridValues[x, y] = tile;
+            tiles[x, y] = tile;
 
             if (gridText.GetLength(0) > width && gridText.GetLength(1) > y)
                 gridText[x, y].text = tile.ToString();
@@ -110,15 +130,29 @@ namespace Kira.GridGen
 
         public Tile GetTile(int x, int y)
         {
-            if (x < 0 || y < 0) return gridValues[0, 0];
-            if (x >= width || y >= height) return gridValues[gridValues.GetLength(0), gridValues.GetLength(1)];
-            return gridValues[x, y];
+            if (x < 0 || y < 0) return tiles[0, 0];
+            if (x >= width || y >= height) return tiles[tiles.GetLength(0) - 1, tiles.GetLength(1) - 1];
+            return tiles[x, y];
+        }
+
+        public Tile GetTile(int x, int y, out bool hasTile)
+        {
+            hasTile = true;
+            if (x < 0 || y < 0) hasTile = false;
+            if (x >= width || y >= height) hasTile = false;
+            return GetTile(x, y);
         }
 
         public Tile GetTile(Vector3 worldPosition)
         {
             GetXY(worldPosition, out int x, out int y);
             return GetTile(x, y);
+        }
+
+        public Tile GetTile(Vector3 worldPosition, out bool hasTile)
+        {
+            GetXY(worldPosition, out int x, out int y);
+            return GetTile(x, y, out hasTile);
         }
     }
 }

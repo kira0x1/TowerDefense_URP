@@ -13,15 +13,28 @@ namespace Kira
 
     public class Tile : IEquatable<Tile>
     {
+        public readonly string tileName;
         public readonly int x;
         public readonly int y;
         public Vector3 worldPosition;
         public TileType tileType;
 
-        public Tile(int x, int y)
+        public Tile(int x, int y, TileType tileType)
         {
             this.x = x;
             this.y = y;
+
+            this.tileType = tileType;
+            this.tileName = "Normal Tile";
+
+            if (tileType == TileType.RoadTile)
+            {
+                tileName = "Road Tile";
+            }
+            else if (tileType == TileType.VillageTile)
+            {
+                tileName = "Village Tile";
+            }
         }
 
         public bool Equals(Tile other)
@@ -46,6 +59,11 @@ namespace Kira
         public override int GetHashCode()
         {
             return HashCode.Combine(x, y);
+        }
+
+        public override string ToString()
+        {
+            return tileName;
         }
     }
 }
