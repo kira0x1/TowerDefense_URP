@@ -11,29 +11,40 @@ namespace Kira
         BranchTile
     }
 
+    public enum TerrainType
+    {
+        Steel,
+        Grass,
+        Sand,
+        Soil,
+        Snow
+    }
+
     public class Tile : IEquatable<Tile>
     {
         public readonly string tileName;
         public readonly int x;
         public readonly int y;
         public Vector3 worldPosition;
+        public TerrainType terrainType;
         public TileType tileType;
 
-        public Tile(int x, int y, TileType tileType)
+        public Tile(int x, int y, TileType tileType, TerrainType terrainType = TerrainType.Grass)
         {
             this.x = x;
             this.y = y;
 
             this.tileType = tileType;
-            this.tileName = "Normal Tile";
+            this.tileName = "Steel";
+            this.terrainType = terrainType;
 
             if (tileType == TileType.RoadTile)
             {
-                tileName = "Road Tile";
+                tileName = "Road";
             }
             else if (tileType == TileType.VillageTile)
             {
-                tileName = "Village Tile";
+                tileName = "Village";
             }
         }
 

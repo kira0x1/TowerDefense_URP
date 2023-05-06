@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 namespace Kira
@@ -6,6 +7,11 @@ namespace Kira
     {
         [SerializeField]
         private Transform highlighter;
+
+        public Action<Tile> OnTilePointerEnter;
+        public Action OnTilePointerExit;
+        public Action<Tile> OnTileSelected;
+        public Action OnTileDeselected;
 
         private TileGenerator tileGenerator;
         private bool selectorVisible;
@@ -39,9 +45,11 @@ namespace Kira
             if (hasTile)
             {
                 OnSelectTile(tile);
+                OnTilePointerEnter?.Invoke(tile);
             }
             else if (selectorVisible)
             {
+                OnTilePointerExit?.Invoke();
                 HideSelector();
             }
         }

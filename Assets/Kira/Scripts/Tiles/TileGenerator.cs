@@ -1,4 +1,5 @@
 using Kira.GridGen;
+using Kira.Noise;
 using UnityEngine;
 using Grid = Kira.GridGen.Grid;
 
@@ -26,7 +27,11 @@ namespace Kira
         [SerializeField]
         private GridGizmos gridGizmos;
 
+        [SerializeField]
+        private NoiseSettings noiseSettings;
+
         public Grid grid;
+        private GameObject[,] tileMeshes;
 
         private void OnValidate()
         {
@@ -68,19 +73,18 @@ namespace Kira
                 DestroyImmediate(child);
             }
         }
-
         #endif
-
 
         private void SpawnGridTiles()
         {
             Transform tileParent = new GameObject("Grid Tiles").transform;
             tileParent.SetParent(transform);
             Tile[,] tiles = grid.tiles;
+            tileMeshes = new GameObject[tiles.GetLength(0), tiles.GetLength(1)];
 
-            for (int x = 0; x < tiles.GetLength(0); x++)
+            for (int y = 0; y < tiles.GetLength(1); y++)
             {
-                for (int y = 0; y < tiles.GetLength(1); y++)
+                for (int x = 0; x < tiles.GetLength(0); x++)
                 {
                     Vector3 pos = grid.GetWorldPosition(x, y) + new Vector3(cellSize, 0, cellSize) * 0.5f;
 
@@ -103,6 +107,28 @@ namespace Kira
                     GameObject tileMesh = Instantiate(tilePrefab, tilePos, Quaternion.Euler(90, 0, 0), tileParent);
                     tileMesh.name = tile.tileName;
                     tileMesh.transform.localScale = Vector3.one * cellSize;
+                    tileMeshes[x, y] = tileMesh;
+                }
+            }
+        }
+
+        [ContextMenu("Display Noise")]
+        private void DisplayNoise()
+        {
+            float[,] noiseMap = NoiseGenerator.GenerateNoiseMap(noiseSettings);
+            SpawnGridMeshEditor();
+
+            for (int y = 0; y < tileMeshes.GetLength(1); y++)
+            {
+                for (int x = 0; x < tileMeshes.GetLength(0); x++)
+                {
+                    GameObject tile = tileMeshes[x, y];
+                    Renderer tileRend = tile.GetComponent<Renderer>();
+                    Debug.Log(noiseMap[x, y]);
+                    MaterialPropertyBlock block = new MaterialPropertyBlock();
+                    Color noiseColor = Color.Lerp(Color.black, Color.white, noiseMap[x, y]);
+                    block.SetColor("_BaseColor", noiseColor);
+                    tileRend.SetPropertyBlock(block);
                 }
             }
         }

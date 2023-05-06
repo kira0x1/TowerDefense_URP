@@ -25,7 +25,13 @@ namespace Kira
         private float panSpeed = 150f;
         [SerializeField]
         private float panSpeedMultiplier = 4.0f;
+        [SerializeField]
+        private float minDragDistance = 0.04f;
+        [SerializeField]
+        private bool smoothDrag;
 
+        private bool isDragging;
+        private Vector3 dragStartPos;
         private float lastPanMagnitude;
         private float curZoom;
         private Transform camTr;
@@ -87,18 +93,37 @@ namespace Kira
 
         private void PanCamera()
         {
-            if (!Input.GetKey(KeyCode.Mouse2))
+            if (Input.GetKeyDown(KeyCode.Mouse2))
+            {
+                isDragging = true;
+                dragStartPos = GetMousePoint();
+                Cursor.lockState = CursorLockMode.Confined;
+            }
+
+            if (Input.GetKeyUp(KeyCode.Mouse2))
+            {
+                Cursor.lockState = CursorLockMode.None;
+                isDragging = false;
+            }
+
+            if (!isDragging)
+                return;
+
+            Vector3 mouseDelta = GetMousePoint() - dragStartPos;
+            if (mouseDelta.magnitude < minDragDistance)
             {
                 return;
             }
 
             float speed = panSpeed * (curZoom / 10f);
-            if (isHoldingShift) speed *= panSpeedMultiplier;
-            Vector3 mouseDelta = GetMousePoint();
-            (mouseDelta.y, mouseDelta.z) = (mouseDelta.z, mouseDelta.y);
-            mouseDelta *= speed * Time.deltaTime;
-            // mouseDelta.z = -mouseDelta.z;
+            if (isHoldingShift)
+            {
+                speed *= panSpeedMultiplier;
+            }
 
+            (mouseDelta.y, mouseDelta.z) = (mouseDelta.z, mouseDelta.y);
+            if (!smoothDrag) mouseDelta = Vector3.Normalize(mouseDelta);
+            mouseDelta *= speed * Time.deltaTime;
             Vector3 position = camTr.position + mouseDelta;
             camTr.position = position;
         }
