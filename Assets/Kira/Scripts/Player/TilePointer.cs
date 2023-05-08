@@ -16,7 +16,6 @@ namespace Kira
         public Action<Tile> OnTilePointerEnter;
         public Action OnTilePointerExit;
         public Action<Tile, bool> OnTileClicked;
-        public Action<Tile, bool> OnTileDeselected;
         public Action OnDeselectAll;
 
         private void Start()
@@ -86,11 +85,6 @@ namespace Kira
         private void ClickTile(Tile tile, bool addToSelection)
         {
             OnTileClicked?.Invoke(tile, addToSelection);
-        }
-
-        private void DeselectTile(Tile tile, bool removeFromSelection)
-        {
-            OnTileDeselected?.Invoke(tile, removeFromSelection);
         }
 
         private void DeselectAll()

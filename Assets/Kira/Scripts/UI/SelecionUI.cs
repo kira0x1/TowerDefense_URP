@@ -21,9 +21,10 @@ namespace Kira.UI
             tilePointer = FindObjectOfType<TilePointer>();
             tileSelector = FindObjectOfType<TileSelector>();
             healthParent = healthFill.transform.parent.gameObject;
-            tilePointer.OnTileClicked += OnTileSelected;
-            tilePointer.OnTileDeselected += OnTileDeselected;
+
             tilePointer.OnDeselectAll += OnDesectAll;
+            tileSelector.OnTileSelected += HandleTileSelection;
+            tileSelector.OnTileDeselected += HandleTileSelection;
         }
 
         protected override void HidePanel()
@@ -39,18 +40,22 @@ namespace Kira.UI
             descriptionText.text = "";
         }
 
-        private void OnTileSelected(Tile tile, bool addToSelection)
+        private void HandleTileSelection(Tile tile)
         {
-            healthParent.SetActive(tile.isOccupied);
-            headerText.text = TileSelector.SelectionCount == 1 ? tile.tileName : $"{TileSelector.SelectionCount} tiles";
-            healthText.text = tile.isOccupied ? $"{tile.health:F0}/{tile.maxHealth:F0}" : "";
-            healthFill.fillAmount = tile.health / tile.maxHealth;
-            ShowPanel();
-        }
+            Tile tileSelected = TileSelector.TileSelected;
 
-        private void OnTileDeselected(Tile tile, bool removeFromSelection)
-        {
-            HidePanel();
+            healthParent.SetActive(tileSelected.isOccupied);
+
+            if (TileSelector.SelectionCount <= 0)
+            {
+                HidePanel();
+                return;
+            }
+
+            headerText.text = TileSelector.SelectionCount == 1 ? tileSelected.tileName : $"{TileSelector.SelectionCount} tiles";
+            healthText.text = tileSelected.isOccupied ? $"{tileSelected.health:F0}/{tileSelected.maxHealth:F0}" : "";
+            healthFill.fillAmount = tileSelected.health / tileSelected.maxHealth;
+            ShowPanel();
         }
 
         private void OnDesectAll()

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -17,9 +18,15 @@ namespace Kira
         private Dictionary<Tile, GameObject> selectionMeshPool;
         public List<Tile> tilesSelected;
 
+        private static Tile tileSelected;
+        public static Tile TileSelected => tileSelected;
+
         private static int selectionCount;
         public static int SelectionCount => selectionCount;
         private bool hasSelection;
+
+        public Action<Tile> OnTileSelected;
+        public Action<Tile> OnTileDeselected;
 
         #endregion
 
@@ -29,8 +36,7 @@ namespace Kira
             selectionMeshPool = new Dictionary<Tile, GameObject>();
             tilesSelected = new List<Tile>();
 
-            tilePointer.OnTileClicked += OnTileSelected;
-            tilePointer.OnTileDeselected += OnTileDeselected;
+            tilePointer.OnTileClicked += OnTileClicked;
             tilePointer.OnDeselectAll += DeselectAll;
         }
 
@@ -45,6 +51,8 @@ namespace Kira
             selectionMesh.SetActive(true);
 
             hasSelection = true;
+            tileSelected = tile;
+            OnTileSelected?.Invoke(tile);
         }
 
         private void DeselectTile(Tile tile)
@@ -54,6 +62,13 @@ namespace Kira
 
             selectionMeshPool.Remove(tile, out GameObject mesh);
             Destroy(mesh);
+
+            if (selectionCount > 0)
+            {
+                tileSelected = tilesSelected[^1];
+            }
+
+            OnTileDeselected?.Invoke(tile);
         }
 
         private void DeselectAll()
@@ -73,7 +88,7 @@ namespace Kira
 
         #region EVENTS
 
-        private void OnTileSelected(Tile tile, bool addToSelection)
+        public void OnTileClicked(Tile tile, bool addToSelection)
         {
             if (addToSelection)
             {
@@ -93,12 +108,6 @@ namespace Kira
             }
 
             SelectTile(tile);
-        }
-
-        private void OnTileDeselected(Tile tile, bool removeOne)
-        {
-            if (removeOne) DeselectTile(tile);
-            else DeselectAll();
         }
 
         #endregion
