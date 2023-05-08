@@ -12,14 +12,14 @@ namespace Kira.UI
             canvas = GetComponent<CanvasGroup>();
         }
 
-        protected void ShowPanel()
+        protected virtual void ShowPanel()
         {
             canvas.alpha = 1f;
             canvas.interactable = true;
             canvas.blocksRaycasts = true;
         }
 
-        protected void HidePanel()
+        protected virtual void HidePanel()
         {
             canvas.alpha = 0f;
             canvas.interactable = false;
@@ -35,7 +35,7 @@ namespace Kira.UI
         }
 
         [ContextMenu("Hide Panel")]
-        private void HidePanelEditor()
+        protected virtual void HidePanelEditor()
         {
             canvas = GetComponent<CanvasGroup>();
             HidePanel();

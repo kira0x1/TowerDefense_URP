@@ -1,65 +1,123 @@
-using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace Kira
 {
     public class TileSelector : MonoBehaviour
     {
+        #region VARIABLES
+
         [SerializeField]
-        private Transform highlighter;
+        private GameObject selectionMeshPrefab;
 
-        public Action<Tile> OnTilePointerEnter;
-        public Action OnTilePointerExit;
-        public Action<Tile> OnTileSelected;
-        public Action OnTileDeselected;
+        [SerializeField]
+        private Transform selectionParent;
 
-        private TileGenerator tileGenerator;
-        private bool selectorVisible;
-        private Camera cam;
+        private TilePointer tilePointer;
+        private Dictionary<Tile, GameObject> selectionMeshPool;
+        public List<Tile> tilesSelected;
+
+        private static int selectionCount;
+        public static int SelectionCount => selectionCount;
+        private bool hasSelection;
+
+        #endregion
 
         private void Start()
         {
-            cam = FindObjectOfType<Camera>();
-            tileGenerator = GetComponent<TileGenerator>();
-            highlighter.localScale = Vector3.one * tileGenerator.cellSize;
-            HideSelector();
+            tilePointer = GetComponent<TilePointer>();
+            selectionMeshPool = new Dictionary<Tile, GameObject>();
+            tilesSelected = new List<Tile>();
+
+            tilePointer.OnTileClicked += OnTileSelected;
+            tilePointer.OnTileDeselected += OnTileDeselected;
+            tilePointer.OnDeselectAll += DeselectAll;
         }
 
-        private void HideSelector()
+        private void SelectTile(Tile tile)
         {
-            highlighter.gameObject.SetActive(false);
-            selectorVisible = false;
+            tilesSelected.Add(tile);
+            selectionCount++;
+
+            GameObject selectionMesh = CreateSelectionMesh();
+            selectionMeshPool.Add(tile, selectionMesh);
+            MoveSelectionMesh(tile, selectionMesh);
+            selectionMesh.SetActive(true);
+
+            hasSelection = true;
         }
 
-        private void ShowSelector()
+        private void DeselectTile(Tile tile)
         {
-            highlighter.gameObject.SetActive(true);
-            selectorVisible = true;
+            tilesSelected.Remove(tile);
+            selectionCount--;
+
+            selectionMeshPool.Remove(tile, out GameObject mesh);
+            Destroy(mesh);
         }
 
-        private void Update()
+        private void DeselectAll()
         {
-            Vector3 pointerPos = cam.ScreenToWorldPoint(Input.mousePosition);
-            Tile tile = tileGenerator.grid.GetTile(pointerPos, out bool hasTile);
+            selectionCount = 0;
+            hasSelection = false;
 
-            if (hasTile)
+            foreach (Tile tile in tilesSelected)
             {
-                OnSelectTile(tile);
-                OnTilePointerEnter?.Invoke(tile);
+                GameObject selector = selectionMeshPool[tile];
+                Destroy(selector);
             }
-            else if (selectorVisible)
-            {
-                OnTilePointerExit?.Invoke();
-                HideSelector();
-            }
+
+            tilesSelected.Clear();
+            selectionMeshPool.Clear();
         }
 
-        private void OnSelectTile(Tile tile)
+        #region EVENTS
+
+        private void OnTileSelected(Tile tile, bool addToSelection)
         {
-            ShowSelector();
+            if (addToSelection)
+            {
+                if (tilesSelected.Contains(tile))
+                {
+                    DeselectTile(tile);
+                    return;
+                }
+
+                SelectTile(tile);
+                return;
+            }
+
+            if (hasSelection)
+            {
+                DeselectAll();
+            }
+
+            SelectTile(tile);
+        }
+
+        private void OnTileDeselected(Tile tile, bool removeOne)
+        {
+            if (removeOne) DeselectTile(tile);
+            else DeselectAll();
+        }
+
+        #endregion
+
+        #region HELPERS
+
+        private GameObject CreateSelectionMesh()
+        {
+            GameObject mesh = Instantiate(selectionMeshPrefab, selectionParent);
+            return mesh;
+        }
+
+        private void MoveSelectionMesh(Tile tile, GameObject selectionMesh)
+        {
             var pos = tile.worldPosition;
-            pos.y += 0.1f;
-            highlighter.position = pos;
+            pos.y = 0f;
+            selectionMesh.transform.position = pos;
         }
+
+        #endregion
     }
 }

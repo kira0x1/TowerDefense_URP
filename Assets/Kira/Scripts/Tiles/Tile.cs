@@ -29,6 +29,10 @@ namespace Kira
         public TerrainType terrainType;
         public TileType tileType;
 
+        public float health = 100;
+        public float maxHealth = 100;
+        public bool isOccupied;
+
         public Tile(int x, int y, TileType tileType, TerrainType terrainType = TerrainType.Grass)
         {
             this.x = x;
@@ -44,6 +48,7 @@ namespace Kira
             }
             else if (tileType == TileType.VillageTile)
             {
+                isOccupied = true;
                 tileName = "Village";
             }
         }

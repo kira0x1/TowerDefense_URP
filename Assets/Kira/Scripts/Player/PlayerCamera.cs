@@ -48,6 +48,8 @@ namespace Kira
         private bool isHoldingShift;
         private bool hasFocus;
 
+        private bool isMovingWithWASD;
+
         #endregion
 
         private void OnApplicationFocus(bool hasFocus)
@@ -60,6 +62,8 @@ namespace Kira
             camTr = transform;
             cam = GetComponent<Camera>();
             curZoom = cam.orthographicSize;
+            Cursor.lockState = CursorLockMode.Locked;
+            Cursor.lockState = CursorLockMode.Confined;
         }
 
         private void Update()
@@ -67,6 +71,24 @@ namespace Kira
             if (hasFocus)
             {
                 Cursor.lockState = CursorLockMode.Confined;
+            }
+            else
+            {
+                isDragging = false;
+            }
+
+            if (Input.GetKeyDown(KeyCode.Mouse2))
+            {
+                isDragging = true;
+                dragStartPos = GetMousePoint();
+                Cursor.lockState = CursorLockMode.Confined;
+                hasFocus = true;
+            }
+
+            if (Input.GetKeyUp(KeyCode.Mouse2))
+            {
+                Cursor.lockState = CursorLockMode.None;
+                isDragging = false;
             }
 
             if (Input.GetKey(KeyCode.Escape) || Input.GetKeyDown(KeyCode.Mouse1))
@@ -78,12 +100,11 @@ namespace Kira
             isHoldingShift = Input.GetKey(KeyCode.LeftShift);
             HandleCameraMove();
             ZoomCamera();
+            if (isMovingWithWASD) return;
             PanCamera();
 
-            if (hasFocus)
-            {
-                HandleBorderPan();
-            }
+            if (!hasFocus || isDragging) return;
+            HandleBorderPan();
         }
 
         private Vector3 GetMousePoint()
@@ -103,6 +124,8 @@ namespace Kira
         {
             float h = Input.GetAxisRaw("Horizontal");
             float v = Input.GetAxisRaw("Vertical");
+
+            isMovingWithWASD = h != 0 || v != 0;
 
             float speed = moveSpeed;
 
@@ -138,19 +161,6 @@ namespace Kira
 
         private void PanCamera()
         {
-            if (Input.GetKeyDown(KeyCode.Mouse2))
-            {
-                isDragging = true;
-                dragStartPos = GetMousePoint();
-                Cursor.lockState = CursorLockMode.Confined;
-            }
-
-            if (Input.GetKeyUp(KeyCode.Mouse2))
-            {
-                Cursor.lockState = CursorLockMode.None;
-                isDragging = false;
-            }
-
             if (!isDragging)
                 return;
 
@@ -197,8 +207,11 @@ namespace Kira
                 panDir.x -= borderPanSpeed;
             }
 
-            panDir = Vector3.ClampMagnitude(panDir, borderPanSpeed);
-            MoveCamera(panDir * Time.deltaTime);
+            float speed = borderPanSpeed * (curZoom / 10f);
+            panDir = Vector3.Normalize(panDir);
+            panDir *= speed * Time.deltaTime;
+
+            MoveCamera(panDir);
         }
     }
 }
