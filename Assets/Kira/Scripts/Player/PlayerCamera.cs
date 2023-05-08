@@ -4,6 +4,8 @@ namespace Kira
 {
     public class PlayerCamera : MonoBehaviour
     {
+        #region Variables
+
         [Header("Move")]
         [SerializeField]
         private float moveSpeed = 150f;
@@ -30,6 +32,12 @@ namespace Kira
         [SerializeField]
         private bool smoothDrag;
 
+        [Header("Border Pan")]
+        [SerializeField]
+        private float borderPanPadding = 0.1f;
+        [SerializeField]
+        private float borderPanSpeed = 80f;
+
         private bool isDragging;
         private Vector3 dragStartPos;
         private float lastPanMagnitude;
@@ -38,6 +46,14 @@ namespace Kira
         private Camera cam;
 
         private bool isHoldingShift;
+        private bool hasFocus;
+
+        #endregion
+
+        private void OnApplicationFocus(bool hasFocus)
+        {
+            this.hasFocus = hasFocus;
+        }
 
         private void Start()
         {
@@ -48,13 +64,42 @@ namespace Kira
 
         private void Update()
         {
+            if (hasFocus)
+            {
+                Cursor.lockState = CursorLockMode.Confined;
+            }
+
+            if (Input.GetKey(KeyCode.Escape) || Input.GetKeyDown(KeyCode.Mouse1))
+            {
+                hasFocus = false;
+                Cursor.lockState = CursorLockMode.None;
+            }
+
             isHoldingShift = Input.GetKey(KeyCode.LeftShift);
-            MoveCamera();
+            HandleCameraMove();
             ZoomCamera();
             PanCamera();
+
+            if (hasFocus)
+            {
+                HandleBorderPan();
+            }
         }
 
-        private void MoveCamera()
+        private Vector3 GetMousePoint()
+        {
+            Vector3 mousePoint = cam.ScreenToViewportPoint(Input.mousePosition);
+            (mousePoint.z, mousePoint.y) = (mousePoint.y, mousePoint.z);
+            return mousePoint;
+        }
+
+        private void MoveCamera(Vector3 direction)
+        {
+            Vector3 position = camTr.position + direction;
+            camTr.position = position;
+        }
+
+        private void HandleCameraMove()
         {
             float h = Input.GetAxisRaw("Horizontal");
             float v = Input.GetAxisRaw("Vertical");
@@ -68,8 +113,8 @@ namespace Kira
 
             Vector3 mov = Vector3.ClampMagnitude(new Vector3(h, 0, v), 1f);
             mov *= speed * Time.deltaTime;
-            Vector3 position = camTr.position + mov;
-            camTr.position = position;
+
+            MoveCamera(mov);
         }
 
         private void ZoomCamera()
@@ -121,19 +166,39 @@ namespace Kira
                 speed *= panSpeedMultiplier;
             }
 
-            (mouseDelta.y, mouseDelta.z) = (mouseDelta.z, mouseDelta.y);
             if (!smoothDrag) mouseDelta = Vector3.Normalize(mouseDelta);
             mouseDelta *= speed * Time.deltaTime;
-            Vector3 position = camTr.position + mouseDelta;
-            camTr.position = position;
+
+            MoveCamera(mouseDelta);
         }
 
-        private Vector3 GetMousePoint()
+        private void HandleBorderPan()
         {
-            Vector3 mousePoint = cam.ScreenToViewportPoint(Input.mousePosition);
-            mousePoint.x -= 0.5f;
-            mousePoint.y -= 0.5f;
-            return mousePoint;
+            Vector3 mousePoint = GetMousePoint();
+            Vector3 panDir = Vector3.zero;
+
+            float maxBorder = 1f - borderPanPadding;
+
+            if (mousePoint.z > maxBorder)
+            {
+                panDir.z += borderPanSpeed;
+            }
+            else if (mousePoint.z <= borderPanPadding)
+            {
+                panDir.z -= borderPanSpeed;
+            }
+
+            if (mousePoint.x > maxBorder)
+            {
+                panDir.x += borderPanSpeed;
+            }
+            else if (mousePoint.x <= borderPanPadding)
+            {
+                panDir.x -= borderPanSpeed;
+            }
+
+            panDir = Vector3.ClampMagnitude(panDir, borderPanSpeed);
+            MoveCamera(panDir * Time.deltaTime);
         }
     }
 }
