@@ -44,17 +44,25 @@ namespace Kira.UI
         {
             Tile tileSelected = TileSelector.TileSelected;
 
-            healthParent.SetActive(tileSelected.isOccupied);
-
             if (TileSelector.SelectionCount <= 0)
             {
                 HidePanel();
                 return;
             }
 
-            headerText.text = TileSelector.SelectionCount == 1 ? tileSelected.tileName : $"{TileSelector.SelectionCount} tiles";
-            healthText.text = tileSelected.isOccupied ? $"{tileSelected.health:F0}/{tileSelected.maxHealth:F0}" : "";
-            healthFill.fillAmount = tileSelected.health / tileSelected.maxHealth;
+            if (TileSelector.SelectionCount > 1)
+            {
+                headerText.text = $"{TileSelector.SelectionCount} tiles";
+                healthParent.SetActive(false);
+            }
+            else
+            {
+                healthParent.SetActive(tileSelected.isOccupied);
+                headerText.text = tileSelected.tileName;
+                healthText.text = tileSelected.isOccupied ? $"{tileSelected.health:F0}/{tileSelected.maxHealth:F0}" : "";
+                healthFill.fillAmount = tileSelected.health / tileSelected.maxHealth;
+            }
+
             ShowPanel();
         }
 
