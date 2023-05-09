@@ -33,6 +33,7 @@ namespace Kira
 
         public Grid grid;
         private GameObject[,] tileMeshes;
+        private Tile[,] tiles;
 
         private static readonly int BaseColorProp = Shader.PropertyToID("_BaseColor");
 
@@ -73,7 +74,6 @@ namespace Kira
             roadParent.SetParent(tileParent);
             basicTileParent.SetParent(tileParent);
 
-            Tile[,] tiles = grid.tiles;
             tileMeshes = new GameObject[tiles.GetLength(0), tiles.GetLength(1)];
 
             for (int y = 0; y < tiles.GetLength(1); y++)
@@ -81,7 +81,6 @@ namespace Kira
                 for (int x = 0; x < tiles.GetLength(0); x++)
                 {
                     Vector3 pos = grid.GetWorldPosition(x, y) + new Vector3(cellSize, 0, cellSize) * 0.5f;
-
                     Vector3 tilePos = pos;
                     tilePos.y -= 0.5f;
                     Tile tile = tiles[x, y];
@@ -99,41 +98,36 @@ namespace Kira
                         tilePrefab = roadTilePrefab;
                         GameObject villageMesh = Instantiate(villageOrnament, tilePos, Quaternion.identity, tileParent);
                         villageMesh.transform.localScale = Vector3.one * cellSize * 0.15f;
+
+                        GameObject tileSpawned = CreateTileMesh(tilePrefab, x, y, parent);
+                        villageMesh.transform.SetParent(tileSpawned.transform);
+                        continue;
                     }
 
-                    GameObject tileMesh = Instantiate(tilePrefab, tilePos, Quaternion.Euler(90, 0, 0), parent);
-                    tileMesh.name = tile.tileName;
-                    tileMesh.transform.localScale = Vector3.one * cellSize;
-                    tileMeshes[x, y] = tileMesh;
+                    CreateTileMesh(tilePrefab, x, y, parent);
                 }
             }
         }
 
-        [ContextMenu("Display Noise")]
-        private void DisplayNoise()
+        private GameObject CreateTileMesh(GameObject tilePrefab, int x, int y, Transform parent = null)
         {
-            noiseSettings.width = gridWidth;
-            noiseSettings.height = gridHeight;
-            float[,] noiseMap = NoiseGenerator.GenerateNoiseMap(noiseSettings);
-            SpawnGridMeshEditor();
+            Vector3 pos = grid.GetWorldPosition(x, y) + new Vector3(cellSize, 0, cellSize) * 0.5f;
+            Vector3 tilePos = pos;
+            tilePos.y -= 0.5f;
 
-            for (int y = 0; y < tileMeshes.GetLength(1); y++)
-            {
-                for (int x = 0; x < tileMeshes.GetLength(0); x++)
-                {
-                    GameObject tile = tileMeshes[x, y];
-                    Renderer tileRend = tile.GetComponent<Renderer>();
-                    MaterialPropertyBlock block = new MaterialPropertyBlock();
-                    Color noiseColor = Color.Lerp(Color.black, Color.white, noiseMap[x, y]);
-                    block.SetColor(BaseColorProp, noiseColor);
-                    tileRend.SetPropertyBlock(block);
-                }
-            }
+            Tile tile = tiles[x, y];
+            GameObject tileMesh = Instantiate(tilePrefab, tilePos, Quaternion.Euler(90, 0, 0), parent);
+            tileMesh.name = tile.tileName;
+            tileMesh.transform.localScale = Vector3.one * cellSize;
+
+            tileMeshes[x, y] = tileMesh;
+            return tileMesh;
         }
 
         public Grid CreateGrid()
         {
             grid = new Grid(gridWidth, gridHeight, cellSize, gridGizmos.gridTextFontSize, GetStartPosition(), centerY, villageOffset);
+            tiles = grid.tiles;
             return grid;
         }
 
@@ -178,6 +172,28 @@ namespace Kira
         }
 
         #endif
+
+        [ContextMenu("Display Noise")]
+        private void DisplayNoise()
+        {
+            noiseSettings.width = gridWidth;
+            noiseSettings.height = gridHeight;
+            float[,] noiseMap = NoiseGenerator.GenerateNoiseMap(noiseSettings);
+            SpawnGridMeshEditor();
+
+            for (int y = 0; y < tileMeshes.GetLength(1); y++)
+            {
+                for (int x = 0; x < tileMeshes.GetLength(0); x++)
+                {
+                    GameObject tile = tileMeshes[x, y];
+                    Renderer tileRend = tile.GetComponent<Renderer>();
+                    MaterialPropertyBlock block = new MaterialPropertyBlock();
+                    Color noiseColor = Color.Lerp(Color.black, Color.white, noiseMap[x, y]);
+                    block.SetColor(BaseColorProp, noiseColor);
+                    tileRend.SetPropertyBlock(block);
+                }
+            }
+        }
 
         #endregion
     }

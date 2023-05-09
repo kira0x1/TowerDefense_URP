@@ -79,7 +79,7 @@ namespace Kira.GridGen
         {
             foreach (Tile tile in tiles)
             {
-                if (tile.tileType == TileType.BuildingTile)
+                if (tile.tileType == TileType.BasicTile)
                     Gizmos.color = buildingColor;
                 else if (tile.tileType == TileType.RoadTile)
                     Gizmos.color = roadColor;

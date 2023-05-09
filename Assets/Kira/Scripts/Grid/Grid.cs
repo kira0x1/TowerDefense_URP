@@ -78,7 +78,7 @@ namespace Kira.GridGen
                     pos.x += x * cellSize;
                     pos.z += y * cellSize;
 
-                    TileType tileType = TileType.BuildingTile;
+                    TileType tileType = TileType.BasicTile;
 
                     if (isRoadTile)
                     {

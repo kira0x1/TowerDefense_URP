@@ -5,7 +5,7 @@ namespace Kira
 {
     public enum TileType
     {
-        BuildingTile,
+        BasicTile,
         RoadTile,
         VillageTile,
         BranchTile
