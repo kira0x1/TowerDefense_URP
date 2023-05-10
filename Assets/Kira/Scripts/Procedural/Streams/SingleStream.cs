@@ -1,26 +1,30 @@
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Unity.Collections;
+using Unity.Collections.LowLevel.Unsafe;
 using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.Rendering;
 
 namespace Kira.Procedural.Streams
 {
-    public class SingleStream : IMeshStreams
+    public struct SingleStream : IMeshStreams
     {
         [StructLayout(LayoutKind.Sequential)]
         private struct Stream0
         {
             public float3 position, normal;
-            public half4 tangent;
-            public half2 texCoord0;
+            public float4 tangent;
+            public float2 texCoord0;
         }
 
+        [NativeDisableContainerSafetyRestriction]
         private NativeArray<Stream0> stream0;
-        private NativeArray<int3> triangles;
 
-        public void Setup(Mesh.MeshData data, int vertexCount, int indexCount)
+        [NativeDisableContainerSafetyRestriction]
+        private NativeArray<TriangleUInt16> triangles;
+
+        public void Setup(Mesh.MeshData data, Bounds bounds, int vertexCount, int indexCount)
         {
             var descriptor = new NativeArray<VertexAttributeDescriptor>(4, Allocator.Temp, NativeArrayOptions.UninitializedMemory);
             descriptor[0] = new VertexAttributeDescriptor(dimension: 3);
@@ -31,13 +35,20 @@ namespace Kira.Procedural.Streams
             data.SetVertexBufferParams(vertexCount, descriptor);
             descriptor.Dispose();
 
-            data.SetIndexBufferParams(indexCount, IndexFormat.UInt32);
+            data.SetIndexBufferParams(indexCount, IndexFormat.UInt16);
 
             data.subMeshCount = 1;
-            data.SetSubMesh(0, new SubMeshDescriptor(0, indexCount));
+            data.SetSubMesh(0, new SubMeshDescriptor(0, indexCount)
+                {
+                    bounds = bounds,
+                    vertexCount = vertexCount
+                },
+                MeshUpdateFlags.DontRecalculateBounds |
+                MeshUpdateFlags.DontValidateIndices
+            );
 
             stream0 = data.GetVertexData<Stream0>();
-            triangles = data.GetIndexData<int>().Reinterpret<int3>(4);
+            triangles = data.GetIndexData<ushort>().Reinterpret<TriangleUInt16>(2);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

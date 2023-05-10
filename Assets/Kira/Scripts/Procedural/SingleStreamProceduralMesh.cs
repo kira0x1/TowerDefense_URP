@@ -1,4 +1,6 @@
-﻿using Unity.Collections;
+﻿using System.Runtime.InteropServices;
+using Unity.Collections;
+using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.Rendering;
 using static Unity.Mathematics.math;
@@ -9,6 +11,14 @@ namespace Kira.Procedural
     [RequireComponent(typeof(MeshFilter), typeof(MeshRenderer))]
     public class SingleStreamProceduralMesh : MonoBehaviour
     {
+        [StructLayout(LayoutKind.Sequential)]
+        private struct Vertex
+        {
+            public float3 position, normal;
+            public half4 tangent;
+            public half2 texCoord0;
+        }
+
         private void OnEnable()
         {
             CreateMesh();
@@ -21,12 +31,12 @@ namespace Kira.Procedural
             const int vertexCount = 4;
             const int triangleIndexCount = 6;
 
-
             Mesh.MeshDataArray meshDataArray = Mesh.AllocateWritableMeshData(1);
             Mesh.MeshData meshData = meshDataArray[0];
 
-            NativeArray<VertexAttributeDescriptor> vertexAttributes
-                = new(vertexAttributeCount, Allocator.Temp, NativeArrayOptions.UninitializedMemory);
+            var vertexAttributes = new NativeArray<VertexAttributeDescriptor>(
+                vertexAttributeCount, Allocator.Temp, NativeArrayOptions.UninitializedMemory
+            );
 
             vertexAttributes[0] = new VertexAttributeDescriptor(dimension: 3);
             vertexAttributes[1] = new VertexAttributeDescriptor(VertexAttribute.Normal, dimension: 3);
