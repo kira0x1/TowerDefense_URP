@@ -28,9 +28,8 @@ namespace Kira
         [SerializeField]
         private float panSpeedMultiplier = 4.0f;
         [SerializeField]
-        private float minDragDistance = 0.04f;
-        [SerializeField]
-        private bool smoothDrag;
+        private MouseDrag panDrag;
+
 
         [Header("Border Pan")]
         [SerializeField]
@@ -38,8 +37,6 @@ namespace Kira
         [SerializeField]
         private float borderPanSpeed = 80f;
 
-        private bool isDragging;
-        private Vector3 dragStartPos;
         private float lastPanMagnitude;
         private float curZoom;
         private Transform camTr;
@@ -47,7 +44,6 @@ namespace Kira
 
         private bool isHoldingShift;
         private bool hasFocus;
-
         private bool isMovingWithWASD;
 
         #endregion
@@ -61,6 +57,7 @@ namespace Kira
         {
             camTr = transform;
             cam = GetComponent<Camera>();
+            panDrag.Init(cam);
             curZoom = cam.orthographicSize;
             Cursor.lockState = CursorLockMode.Locked;
             Cursor.lockState = CursorLockMode.Confined;
@@ -72,24 +69,8 @@ namespace Kira
             {
                 Cursor.lockState = CursorLockMode.Confined;
             }
-            else
-            {
-                isDragging = false;
-            }
 
-            if (Input.GetKeyDown(KeyCode.Mouse2))
-            {
-                isDragging = true;
-                dragStartPos = GetMousePoint();
-                Cursor.lockState = CursorLockMode.Confined;
-                hasFocus = true;
-            }
-
-            if (Input.GetKeyUp(KeyCode.Mouse2))
-            {
-                Cursor.lockState = CursorLockMode.None;
-                isDragging = false;
-            }
+            panDrag.Update();
 
             if (Input.GetKey(KeyCode.Escape) || Input.GetKeyDown(KeyCode.Mouse1))
             {
@@ -103,7 +84,7 @@ namespace Kira
             if (isMovingWithWASD) return;
             PanCamera();
 
-            if (!hasFocus || isDragging) return;
+            if (!hasFocus || panDrag.IsDragging) return;
             HandleBorderPan();
         }
 
@@ -161,25 +142,17 @@ namespace Kira
 
         private void PanCamera()
         {
-            if (!isDragging)
+            if (!panDrag.IsDragging)
                 return;
-
-            Vector3 mouseDelta = GetMousePoint() - dragStartPos;
-            if (mouseDelta.magnitude < minDragDistance)
-            {
-                return;
-            }
 
             float speed = panSpeed * (curZoom / 10f);
+
             if (isHoldingShift)
             {
                 speed *= panSpeedMultiplier;
             }
 
-            if (!smoothDrag) mouseDelta = Vector3.Normalize(mouseDelta);
-            mouseDelta *= speed * Time.deltaTime;
-
-            MoveCamera(mouseDelta);
+            MoveCamera(panDrag.DragMovement * speed);
         }
 
         private void HandleBorderPan()

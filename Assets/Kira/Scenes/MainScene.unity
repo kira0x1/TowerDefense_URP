@@ -1446,10 +1446,14 @@ MonoBehaviour:
   zoomSpeedMultiplier: 4
   panSpeed: 40
   panSpeedMultiplier: 2
-  minDragDistance: 0.025
-  smoothDrag: 0
+  panDrag:
+    key: 325
+    minDragDistance: 0.04
+    smoothDrag: 0
+    isDragging: 0
+    dragStartPos: {x: 0, y: 0, z: 0}
   borderPanPadding: 0.01
-  borderPanSpeed: 20
+  borderPanSpeed: 60
 --- !u!1 &334096364
 GameObject:
   m_ObjectHideFlags: 0
