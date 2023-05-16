@@ -31,6 +31,7 @@ namespace Kira
         private MouseDrag panDrag;
 
 
+
         [Header("Border Pan")]
         [SerializeField]
         private float borderPanPadding = 0.1f;
