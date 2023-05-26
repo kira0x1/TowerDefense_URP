@@ -133,7 +133,7 @@ namespace Kira
             }
 
 
-            if (hasSelection && !addToSelection)
+            if (hasSelection && !addToSelection && !removeFromSelection)
             {
                 DeselectAll();
             }
