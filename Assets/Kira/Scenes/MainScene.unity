@@ -1061,8 +1061,9 @@ MonoBehaviour:
     isHoldingKey: 0
     dragStartPos: {x: 0, y: 0, z: 0}
   marqueSprite: {fileID: 1521524545}
+  wasSelectingCoolDown: 0.2
   gizmoCornerRadius: 5
-  gizmoNodeRadius: 4
+  gizmoNodeRadius: 2
   gizmoCornerColor: {r: 0.4292453, g: 0.80801904, b: 1, a: 1}
   gizmoNodeColor: {r: 0, g: 1, b: 0.098634005, a: 1}
 --- !u!1 &284714159
@@ -2754,6 +2755,8 @@ MonoBehaviour:
   selectionMeshPrefab: {fileID: 5676823371628176271, guid: 46c078bcb4cad1a47b4f87309eaa4d7b,
     type: 3}
   selectionParent: {fileID: 239490531}
+  addToSelectionKey: 304
+  removeFromSelectionKey: 306
 --- !u!1 &641760996
 GameObject:
   m_ObjectHideFlags: 0
