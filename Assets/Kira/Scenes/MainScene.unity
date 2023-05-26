@@ -1063,8 +1063,8 @@ MonoBehaviour:
   marqueSprite: {fileID: 1521524545}
   gizmoCornerRadius: 5
   gizmoNodeRadius: 4
-  gizmoCornerColor: {r: 0, g: 1, b: 0, a: 1}
-  gizmoNodeColor: {r: 1, g: 0, b: 1, a: 1}
+  gizmoCornerColor: {r: 0.4292453, g: 0.80801904, b: 1, a: 1}
+  gizmoNodeColor: {r: 0, g: 1, b: 0.098634005, a: 1}
 --- !u!1 &284714159
 GameObject:
   m_ObjectHideFlags: 0
