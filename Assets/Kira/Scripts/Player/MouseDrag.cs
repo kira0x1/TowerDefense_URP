@@ -12,16 +12,22 @@ namespace Kira
         [SerializeField]
         private bool smoothDrag;
         [SerializeField]
-        private bool isDragging;
+        private bool isHoldingKey;
         [SerializeField]
         private Vector3 dragStartPos;
 
         private Camera cam;
         private Vector3 dragMovement;
+        private Vector3 dragStartWorld;
+        private bool isDragging;
 
+        public bool IsHoldingKey => isHoldingKey;
         public bool IsDragging => isDragging;
 
         public Vector3 DragMovement => dragMovement;
+        public Vector3 DragStart => dragStartPos;
+
+        public Vector3 DragStartWorld => dragStartWorld;
 
         public void Init(Camera cam)
         {
@@ -32,19 +38,21 @@ namespace Kira
         {
             if (Input.GetKeyDown(key))
             {
-                isDragging = true;
+                isHoldingKey = true;
                 dragStartPos = GetMousePoint();
+                dragStartWorld = GetMousePointWorld();
                 Cursor.lockState = CursorLockMode.Confined;
             }
 
             if (Input.GetKeyUp(key))
             {
                 Cursor.lockState = CursorLockMode.None;
+                isHoldingKey = false;
                 isDragging = false;
                 dragMovement = Vector3.zero;
             }
 
-            if (isDragging)
+            if (isHoldingKey)
             {
                 HandleDragging();
             }
@@ -58,18 +66,23 @@ namespace Kira
                 return;
             }
 
+            isDragging = true;
             if (!smoothDrag) mouseDelta = Vector3.Normalize(mouseDelta);
             mouseDelta *= Time.deltaTime;
 
             dragMovement = mouseDelta;
         }
 
-
-        private Vector3 GetMousePoint()
+        public Vector3 GetMousePoint()
         {
             Vector3 mousePoint = cam.ScreenToViewportPoint(Input.mousePosition);
             (mousePoint.z, mousePoint.y) = (mousePoint.y, mousePoint.z);
             return mousePoint;
+        }
+
+        public Vector3 GetMousePointWorld()
+        {
+            return cam.ScreenToWorldPoint(Input.mousePosition);
         }
     }
 }

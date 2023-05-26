@@ -6,10 +6,10 @@ namespace Kira.GridGen
     {
         public readonly int width;
         public readonly int height;
-        private readonly float cellSize;
+        public readonly float cellSize;
         public Tile[,] tiles;
         private readonly TextMesh[,] gridText;
-        private readonly Vector3 originPos;
+        public readonly Vector3 originPos;
         private readonly int fontSize;
         private readonly bool spawnText;
         private readonly bool centerY;

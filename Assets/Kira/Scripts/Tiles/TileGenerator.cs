@@ -57,7 +57,7 @@ namespace Kira
             }
         }
 
-        private void Start()
+        private void Awake()
         {
             ClearGrid();
             CreateGrid();

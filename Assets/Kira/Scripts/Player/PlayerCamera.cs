@@ -31,12 +31,10 @@ namespace Kira
         private MouseDrag panDrag;
 
 
-
         [Header("Border Pan")]
-        [SerializeField]
-        private float borderPanPadding = 0.1f;
-        [SerializeField]
-        private float borderPanSpeed = 80f;
+        [SerializeField] private bool borderPanEnabled = false;
+        [SerializeField] private float borderPanPadding = 0.1f;
+        [SerializeField] private float borderPanSpeed = 80f;
 
         private float lastPanMagnitude;
         private float curZoom;
@@ -46,6 +44,11 @@ namespace Kira
         private bool isHoldingShift;
         private bool hasFocus;
         private bool isMovingWithWASD;
+
+        [Header("Reset Position")]
+        [SerializeField] private KeyCode centerKey = KeyCode.C;
+        [SerializeField] private KeyCode centerKeyModifier = KeyCode.LeftShift;
+        private Vector3 cameraStartPos;
 
         #endregion
 
@@ -60,6 +63,7 @@ namespace Kira
             cam = GetComponent<Camera>();
             panDrag.Init(cam);
             curZoom = cam.orthographicSize;
+            cameraStartPos = camTr.position;
             Cursor.lockState = CursorLockMode.Locked;
             Cursor.lockState = CursorLockMode.Confined;
         }
@@ -69,6 +73,11 @@ namespace Kira
             if (hasFocus)
             {
                 Cursor.lockState = CursorLockMode.Confined;
+            }
+
+            if (Input.GetKey(centerKeyModifier) && Input.GetKeyDown(centerKey))
+            {
+                CenterCamera();
             }
 
             panDrag.Update();
@@ -85,8 +94,13 @@ namespace Kira
             if (isMovingWithWASD) return;
             PanCamera();
 
-            if (!hasFocus || panDrag.IsDragging) return;
-            HandleBorderPan();
+            if (!hasFocus || panDrag.IsHoldingKey) return;
+            if (borderPanEnabled) HandleBorderPan();
+        }
+
+        private void CenterCamera()
+        {
+            camTr.position = cameraStartPos;
         }
 
         private Vector3 GetMousePoint()
@@ -143,7 +157,7 @@ namespace Kira
 
         private void PanCamera()
         {
-            if (!panDrag.IsDragging)
+            if (!panDrag.IsHoldingKey)
                 return;
 
             float speed = panSpeed * (curZoom / 10f);

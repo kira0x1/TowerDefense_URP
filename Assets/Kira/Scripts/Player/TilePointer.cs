@@ -62,7 +62,7 @@ namespace Kira
                 DeselectAll();
             }
 
-            if (hasTile)
+            if (hasTile && !MarqueSelector.IsSelecting)
             {
                 HoverTile(tile);
                 OnTilePointerEnter?.Invoke(tile);
