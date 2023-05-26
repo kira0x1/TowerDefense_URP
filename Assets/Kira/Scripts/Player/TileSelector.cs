@@ -14,19 +14,24 @@ namespace Kira
         [SerializeField]
         private Transform selectionParent;
 
+        [SerializeField]
+        private KeyCode addToSelectionKey = KeyCode.LeftShift;
+
+        [SerializeField]
+        private KeyCode removeFromSelectionKey = KeyCode.LeftControl;
+
         private TilePointer tilePointer;
         private Dictionary<Tile, GameObject> selectionMeshPool;
-        public List<Tile> tilesSelected;
-
-        private static Tile tileSelected;
-        public static Tile TileSelected => tileSelected;
-
-        private static int selectionCount;
-        public static int SelectionCount => selectionCount;
+        private List<Tile> tilesSelected;
         private bool hasSelection;
 
         public Action<Tile> OnTileSelected;
         public Action<Tile> OnTileDeselected;
+
+        public static int SelectionCount => selectionCount;
+        public static Tile TileSelected => tileSelected;
+        private static Tile tileSelected;
+        private static int selectionCount;
 
         #endregion
 
@@ -40,7 +45,7 @@ namespace Kira
             tilePointer.OnDeselectAll += DeselectAll;
         }
 
-        private void SelectTile(Tile tile)
+        public void SelectTile(Tile tile)
         {
             tilesSelected.Add(tile);
             selectionCount++;
@@ -55,7 +60,7 @@ namespace Kira
             OnTileSelected?.Invoke(tile);
         }
 
-        private void DeselectTile(Tile tile)
+        public void DeselectTile(Tile tile)
         {
             tilesSelected.Remove(tile);
             selectionCount--;
@@ -71,7 +76,7 @@ namespace Kira
             OnTileDeselected?.Invoke(tile);
         }
 
-        private void DeselectAll()
+        public void DeselectAll()
         {
             selectionCount = 0;
             hasSelection = false;
@@ -86,23 +91,49 @@ namespace Kira
             selectionMeshPool.Clear();
         }
 
-        #region EVENTS
-
-        public void OnTileClicked(Tile tile, bool addToSelection)
+        public void SelectTiles(Tile[] tiles)
         {
-            if (addToSelection)
+            if (tiles.Length == 0) return;
+
+            bool addToSelection = Input.GetKey(addToSelectionKey);
+            bool removeFromSelection = Input.GetKey(removeFromSelectionKey);
+
+            if (hasSelection && !addToSelection && !removeFromSelection)
+            {
+                DeselectAll();
+            }
+
+            foreach (Tile tile in tiles)
             {
                 if (tilesSelected.Contains(tile))
                 {
-                    DeselectTile(tile);
-                    return;
+                    if (removeFromSelection)
+                    {
+                        DeselectTile(tile);
+                    }
                 }
+                else if (!removeFromSelection)
+                {
+                    SelectTile(tile);
+                }
+            }
+        }
 
-                SelectTile(tile);
+        #region EVENTS
+
+        public void OnTileClicked(Tile tile)
+        {
+            bool addToSelection = Input.GetKey(addToSelectionKey);
+            bool removeFromSelection = Input.GetKey(removeFromSelectionKey);
+
+            if (tilesSelected.Contains(tile) && (removeFromSelection || addToSelection))
+            {
+                DeselectTile(tile);
                 return;
             }
 
-            if (hasSelection)
+
+            if (hasSelection && !addToSelection)
             {
                 DeselectAll();
             }

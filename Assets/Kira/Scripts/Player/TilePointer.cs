@@ -15,7 +15,7 @@ namespace Kira
         // EVENTS
         public Action<Tile> OnTilePointerEnter;
         public Action OnTilePointerExit;
-        public Action<Tile, bool> OnTileClicked;
+        public Action<Tile> OnTileClicked;
         public Action OnDeselectAll;
 
         private void Start()
@@ -47,13 +47,12 @@ namespace Kira
         {
             Vector3 pointerPos = cam.ScreenToWorldPoint(Input.mousePosition);
             Tile tile = tileGenerator.grid.GetTile(pointerPos, out bool hasTile);
-            bool isHoldingShift = Input.GetKey(KeyCode.LeftShift);
 
-            if (Input.GetKeyDown(KeyCode.Mouse0))
+            if (Input.GetKeyUp(KeyCode.Mouse0) && !MarqueSelector.IsSelecting && Time.time > MarqueSelector.SelectionStoppedTime)
             {
                 if (hasTile)
                 {
-                    ClickTile(tile, isHoldingShift);
+                    ClickTile(tile);
                 }
             }
 
@@ -82,9 +81,9 @@ namespace Kira
             highlighter.position = pos;
         }
 
-        private void ClickTile(Tile tile, bool addToSelection)
+        private void ClickTile(Tile tile)
         {
-            OnTileClicked?.Invoke(tile, addToSelection);
+            OnTileClicked?.Invoke(tile);
         }
 
         private void DeselectAll()

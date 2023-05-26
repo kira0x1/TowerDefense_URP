@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using Grid = Kira.GridGen.Grid;
 
@@ -8,6 +9,8 @@ namespace Kira
         [SerializeField] private MouseDrag mouseDrag;
         [SerializeField] private Transform marqueSprite;
 
+        [SerializeField] private float wasSelectingCoolDown = 0.2f;
+
         [Header("Gizmos")]
         [SerializeField] private float gizmoCornerRadius = 4f;
         [SerializeField] private float gizmoNodeRadius = 3f;
@@ -16,16 +19,22 @@ namespace Kira
 
         private Camera cam;
         private TileGenerator tileGenerator;
+        private TileSelector tileSelector;
         private Grid grid;
 
         private SelectionNode[,] nodes = new SelectionNode[0, 0];
         public static bool IsSelecting;
+
+        // The time the player let go of the selection + the wasSelectingCoolDown
+        // Used so that we dont select the tile immediatly after letting go of the mouse button
+        public static float SelectionStoppedTime;
 
         private MarqueeBounds bounds;
 
 
         private void Start()
         {
+            tileSelector = FindObjectOfType<TileSelector>();
             tileGenerator = FindObjectOfType<TileGenerator>();
             grid = tileGenerator.grid;
 
@@ -38,6 +47,7 @@ namespace Kira
         public void Update()
         {
             mouseDrag.Update();
+
 
             if (mouseDrag.IsDragging)
             {
@@ -65,6 +75,7 @@ namespace Kira
                 marqueSprite.localScale = scale;
                 marqueSprite.gameObject.SetActive(true);
                 IsSelecting = true;
+                SelectionStoppedTime = Time.time + wasSelectingCoolDown;
             }
             else
             {
@@ -103,11 +114,16 @@ namespace Kira
                 }
             }
 
+            List<Tile> tilesFound = new List<Tile>();
+
             foreach (SelectionNode node in nodes)
             {
                 var tile = grid.GetTile(node.position, out bool hasTile);
                 if (!hasTile) continue;
+                tilesFound.Add(tile);
             }
+
+            tileSelector.SelectTiles(tilesFound.ToArray());
         }
 
         #region Gizmos
@@ -132,14 +148,6 @@ namespace Kira
         private void DrawGridGizmos()
         {
             if (!Application.isPlaying || !IsSelecting) return;
-            Vector3 origin = grid.originPos;
-
-            float y1 = grid.height * grid.cellSize;
-            float x1 = grid.width * grid.cellSize;
-
-            Gizmos.color = Color.magenta;
-            Gizmos.DrawSphere(origin, 5f);
-            Gizmos.DrawSphere(new Vector3(origin.x + x1, origin.y, origin.z + y1), 5f);
 
             foreach (SelectionNode node in nodes)
             {
