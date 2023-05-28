@@ -10,6 +10,7 @@ namespace Kira
         #region VARIABLES
 
         [Header("Tiles")]
+        public bool spawnGridTiles = true;
         public GameObject grassTilePrefab;
         public GameObject roadTilePrefab;
         public GameObject villageOrnament;
@@ -61,7 +62,8 @@ namespace Kira
         {
             ClearGrid();
             CreateGrid();
-            SpawnGridTiles();
+            if (spawnGridTiles)
+                SpawnGridTiles();
         }
 
         private void SpawnGridTiles()
