@@ -26,8 +26,9 @@ namespace Kira
 
         private void CreateMesh()
         {
-            const int gridX = 2;
-            const int gridY = 2;
+            const int gridX = 1;
+            const int gridY = 1;
+
 
             vertices = new Vector3[gridX * gridY * 6];
             triangles = new int[vertices.Length * 3];
@@ -73,6 +74,7 @@ namespace Kira
 
         private void SetUV(Vector3 vertex)
         {
+
         }
 
         private void SetTriangles(int a, int b, int c, int d)
@@ -81,8 +83,8 @@ namespace Kira
             triangles[triangleIndex + 1] = b;
             triangles[triangleIndex + 2] = c;
 
-            triangles[triangleIndex + 3] = c;
-            triangles[triangleIndex + 4] = d;
+            triangles[triangleIndex + 3] = d;
+            triangles[triangleIndex + 4] = c;
             triangles[triangleIndex + 5] = b;
 
             triangleIndex += 6;
