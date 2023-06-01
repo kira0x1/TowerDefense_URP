@@ -9,9 +9,10 @@ namespace Kira
         private Grid grid;
         private Vector3[] vertices;
         private int[] triangles;
+        private Vector2[] uvs;
         private int triangleIndex;
         private int vertexIndex;
-        private Vector2 uv;
+        private int uvIndex;
 
         private MeshRenderer meshRenderer;
         private MeshFilter meshFilter;
@@ -32,10 +33,12 @@ namespace Kira
 
             vertices = new Vector3[gridX * gridY * 6];
             triangles = new int[vertices.Length * 3];
+            uvs = new Vector2[vertices.Length];
 
             float cellSize = grid.cellSize;
             triangleIndex = 0;
             vertexIndex = 0;
+            uvIndex = 0;
 
             Mesh mesh = meshFilter.mesh;
 
@@ -46,10 +49,24 @@ namespace Kira
                     float xPos = x * cellSize;
                     float yPos = y * cellSize;
 
+                    Vector3[] square = new Vector3[4];
+
                     Vector3 v0 = new Vector3(xPos, 0f, yPos);
                     Vector3 v1 = new Vector3(xPos, 0f, yPos + cellSize);
                     Vector3 v2 = new Vector3(xPos + cellSize, 0f, yPos);
                     Vector3 v3 = new Vector3(xPos + cellSize, 0f, yPos + cellSize);
+
+                    square[0] = v0;
+                    square[1] = v1;
+                    square[2] = v2;
+                    square[3] = v3;
+
+                    foreach (Vector3 v in square)
+                    {
+                        Vector2 uv = GetUv(v);
+                        uvs[uvIndex] = uv;
+                        uvIndex++;
+                    }
 
                     vertices[vertexIndex] = v0;
                     vertices[vertexIndex + 1] = v1;
@@ -68,13 +85,15 @@ namespace Kira
 
 
             mesh.vertices = vertices;
+            mesh.uv = uvs;
             mesh.triangles = triangles;
             meshFilter.mesh = mesh;
         }
 
-        private void SetUV(Vector3 vertex)
+        private Vector2 GetUv(Vector3 vertex)
         {
-
+            Vector2 uv = new Vector2(vertex.x, vertex.z);
+            return uv;
         }
 
         private void SetTriangles(int a, int b, int c, int d)
