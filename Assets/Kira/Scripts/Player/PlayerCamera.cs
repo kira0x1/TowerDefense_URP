@@ -4,7 +4,7 @@ namespace Kira
 {
     public class PlayerCamera : MonoBehaviour
     {
-        #region Variables
+        #region Serialized Variables
 
         [Header("Move")]
         [SerializeField]
@@ -13,6 +13,10 @@ namespace Kira
         private float boostMultiplier = 2f;
 
         [Header("Zoom")]
+        [SerializeField]
+        private bool smoothZoom;
+        [SerializeField]
+        private float zoomDuration = 0.1f;
         [SerializeField]
         private float zoomSpeed = 55f;
         [SerializeField]
@@ -36,8 +40,19 @@ namespace Kira
         [SerializeField] private float borderPanPadding = 0.1f;
         [SerializeField] private float borderPanSpeed = 80f;
 
+        [Header("Reset Position")]
+        [SerializeField] private KeyCode centerKey = KeyCode.C;
+        [SerializeField] private KeyCode centerKeyModifier = KeyCode.LeftShift;
+
+        #endregion
+
         private float lastPanMagnitude;
+
+        // Zoom
         private float curZoom;
+        private float targetZoom;
+        private float scrollAxis;
+
         private Transform camTr;
         private Camera cam;
 
@@ -45,12 +60,7 @@ namespace Kira
         private bool hasFocus;
         private bool isMovingWithWASD;
 
-        [Header("Reset Position")]
-        [SerializeField] private KeyCode centerKey = KeyCode.C;
-        [SerializeField] private KeyCode centerKeyModifier = KeyCode.LeftShift;
         private Vector3 cameraStartPos;
-
-        #endregion
 
         private void OnApplicationFocus(bool hasFocus)
         {
@@ -88,14 +98,45 @@ namespace Kira
                 Cursor.lockState = CursorLockMode.None;
             }
 
-            isHoldingShift = Input.GetKey(KeyCode.LeftShift);
+            UpdateKeys();
             HandleCameraMove();
-            ZoomCamera();
             if (isMovingWithWASD) return;
             PanCamera();
 
             if (!hasFocus || panDrag.IsHoldingKey) return;
             if (borderPanEnabled) HandleBorderPan();
+        }
+
+        private void UpdateKeys()
+        {
+            isHoldingShift = Input.GetKey(KeyCode.LeftShift);
+
+            float speed = zoomSpeed;
+
+            if (isHoldingShift)
+            {
+                speed *= zoomSpeedMultiplier;
+            }
+
+
+            scrollAxis = Input.mouseScrollDelta.y * speed;
+
+            float orthoSize = cam.orthographicSize;
+            targetZoom = orthoSize - scrollAxis;
+
+            // Calculate the fraction of the total duration that has passed.
+            curZoom = smoothZoom ? Mathf.MoveTowards(orthoSize, targetZoom, zoomDuration) : targetZoom;
+            curZoom = Mathf.Clamp(curZoom, minZoom, maxZoom);
+        }
+
+        private void ZoomCamera()
+        {
+            cam.orthographicSize = curZoom;
+        }
+
+        private void LateUpdate()
+        {
+            ZoomCamera();
         }
 
         private void CenterCamera()
@@ -134,25 +175,6 @@ namespace Kira
             mov *= speed * Time.deltaTime;
 
             MoveCamera(mov);
-        }
-
-        private void ZoomCamera()
-        {
-            float speed = zoomSpeed;
-
-            if (isHoldingShift)
-            {
-                speed *= zoomSpeedMultiplier;
-            }
-
-            float scroll = Input.GetAxis("Mouse ScrollWheel") * speed;
-
-            curZoom -= scroll;
-
-            if (curZoom < minZoom) curZoom = minZoom;
-            else if (curZoom > maxZoom) curZoom = maxZoom;
-
-            cam.orthographicSize = curZoom;
         }
 
         private void PanCamera()

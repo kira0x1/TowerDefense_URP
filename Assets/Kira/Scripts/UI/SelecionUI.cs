@@ -9,10 +9,10 @@ namespace Kira.UI
         [SerializeField] private TextMeshProUGUI headerText;
         [SerializeField] private TextMeshProUGUI descriptionText;
 
-        private GameObject healthParent;
         [SerializeField] private TextMeshProUGUI healthText;
         [SerializeField] private Image healthFill;
 
+        private GameObject healthParent;
         private TilePointer tilePointer;
         private TileSelector tileSelector;
 

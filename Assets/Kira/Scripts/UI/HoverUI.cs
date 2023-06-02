@@ -1,11 +1,14 @@
 using TMPro;
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace Kira.UI
 {
     public class HoverUI : PanelUI
     {
+        [Header("Settings")]
+        [SerializeField] private bool showHoverUI;
+
+        [Header("UI")]
         [SerializeField] private TextMeshProUGUI headerText;
         [SerializeField] private TextMeshProUGUI descriptionText;
         private TilePointer tilePointer;
@@ -20,6 +23,8 @@ namespace Kira.UI
 
         private void OnPointerEnter(Tile tile)
         {
+            if (!showHoverUI) return;
+
             headerText.text = tile.tileName;
             descriptionText.text = tile.isOccupied ? $"{tile.health:F0}/{tile.maxHealth:F0}" : "";
             ShowPanel();
@@ -27,6 +32,7 @@ namespace Kira.UI
 
         private void OnPointerExit()
         {
+            if (!showHoverUI) return;
             HidePanel();
         }
     }
