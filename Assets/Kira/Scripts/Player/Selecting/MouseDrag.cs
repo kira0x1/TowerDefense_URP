@@ -68,8 +68,6 @@ namespace Kira
 
             isDragging = true;
             if (!smoothDrag) mouseDelta = Vector3.Normalize(mouseDelta);
-            mouseDelta *= Time.deltaTime;
-
             dragMovement = mouseDelta;
         }
 
