@@ -74,7 +74,6 @@ namespace Kira
         public Vector3 GetMousePoint()
         {
             Vector3 mousePoint = cam.ScreenToViewportPoint(Input.mousePosition);
-            (mousePoint.z, mousePoint.y) = (mousePoint.y, mousePoint.z);
             return mousePoint;
         }
 

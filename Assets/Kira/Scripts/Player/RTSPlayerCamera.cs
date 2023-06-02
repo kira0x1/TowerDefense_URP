@@ -59,14 +59,12 @@ namespace Kira
 
 
         private Camera cam;
-        private CinemachineFramingTransposer framingTransposer;
         private Transform camTr;
 
         private void Awake()
         {
             cam = GetComponent<Camera>();
             camTr = virtualCam.transform;
-            framingTransposer = virtualCam.GetCinemachineComponent<CinemachineFramingTransposer>();
             panDrag.Init(cam);
             curZoom = virtualCam.m_Lens.OrthographicSize;
         }
@@ -75,8 +73,14 @@ namespace Kira
         {
             isHoldingShift = Input.GetKey(KeyCode.LeftShift);
             panDrag.Update();
+
             ZoomCamera();
-            PanCamera();
+            HandleCameraMove();
+
+            if (!isMovingWithWASD)
+            {
+                PanCamera();
+            }
         }
 
         private void ZoomCamera()
@@ -93,6 +97,62 @@ namespace Kira
 
             float targetZoom = Mathf.SmoothDamp(virtualCam.m_Lens.OrthographicSize, curZoom, ref zoomVelocity, zoomSmoothTime / 100);
             virtualCam.m_Lens.OrthographicSize = targetZoom;
+        }
+
+        private void MoveCamera(Vector3 direction, float speed)
+        {
+            float relativeZoomSpeed = speed * curZoom / minZoom;
+            cameraTarget.Translate(relativeZoomSpeed * Time.deltaTime * direction);
+        }
+
+        private void MoveTargetRelativeToCamera(Vector3 direction, float speed)
+        {
+            float relativeZoomCameraMoveSpeed = speed * curZoom / minZoom;
+
+            Vector3 camForward = camTr.forward;
+            Vector3 camRight = camTr.right;
+
+            camForward.z = 0f;
+            camRight.z = 0f;
+
+            camForward.Normalize();
+            camRight.Normalize();
+
+            Vector3 relativeDir = camForward * direction.y + camRight * direction.x;
+            cameraTarget.Translate(relativeDir * (relativeZoomCameraMoveSpeed * Time.deltaTime));
+        }
+
+        private void HandleCameraMove()
+        {
+            float h = Input.GetAxisRaw("Horizontal");
+            float v = Input.GetAxisRaw("Vertical");
+
+            isMovingWithWASD = h != 0 || v != 0;
+
+            float speed = moveSpeed;
+
+            if (isHoldingShift)
+            {
+                speed *= boostMultiplier;
+            }
+
+            Vector3 mov = Vector3.ClampMagnitude(new Vector3(h, v, 0), 1f);
+            MoveCamera(mov, speed);
+        }
+
+        private void PanCamera()
+        {
+            if (!panDrag.IsHoldingKey)
+                return;
+
+            float speed = panSpeed;
+
+            if (isHoldingShift)
+            {
+                speed *= panSpeedMultiplier;
+            }
+
+            MoveCamera(panDrag.DragMovement, speed);
         }
 
         private void GetMouseScreenSide(Vector3 mousePosition, out int width, out int height)
@@ -119,65 +179,6 @@ namespace Kira
 
             width = widthPos;
             height = heightPos;
-        }
-
-
-        private void MoveTargetRelativeToCamera(Vector3 direction, float speed)
-        {
-            float relativeZoomCameraMoveSpeed = speed * curZoom / 10f;
-            Vector3 camForward = camTr.forward;
-            Vector3 camRight = camTr.right;
-            camForward.y = 0f;
-            camRight.y = 0f;
-            camForward.Normalize();
-            camRight.Normalize();
-            Vector3 relativeDir = camForward * direction.z + camRight * direction.x;
-            cameraTarget.Translate(relativeDir * (relativeZoomCameraMoveSpeed * speed * Time.deltaTime));
-        }
-
-
-        private void MoveCamera(Vector3 direction)
-        {
-            Vector3 position = cameraTarget.position + direction;
-            cameraTarget.position = position;
-        }
-
-
-        private void HandleCameraMove()
-        {
-            float h = Input.GetAxisRaw("Horizontal");
-            float v = Input.GetAxisRaw("Vertical");
-
-            isMovingWithWASD = h != 0 || v != 0;
-
-            float speed = moveSpeed;
-
-            if (isHoldingShift)
-            {
-                speed *= boostMultiplier;
-            }
-
-            Vector3 mov = Vector3.ClampMagnitude(new Vector3(h, 0, v), 1f);
-            // mov *= speed * Time.deltaTime;
-
-            // MoveCamera(mov);
-            MoveTargetRelativeToCamera(mov, speed);
-        }
-
-
-        private void PanCamera()
-        {
-            if (!panDrag.IsHoldingKey)
-                return;
-
-            float speed = panSpeed * (curZoom / minZoom);
-
-            if (isHoldingShift)
-            {
-                speed *= panSpeedMultiplier;
-            }
-
-            MoveCamera(panDrag.DragMovement * speed);
         }
     }
 }
