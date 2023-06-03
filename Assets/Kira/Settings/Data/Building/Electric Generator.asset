@@ -13,4 +13,6 @@ MonoBehaviour:
   m_Name: Electric Generator
   m_EditorClassIdentifier: 
   name: Electric Generator
+  icon: {fileID: 21300000, guid: a70a1d91915188c4387195e8e1ca9c4d, type: 3}
   buildingCategory: 0
+  tileSize: 1

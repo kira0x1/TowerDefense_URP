@@ -5,7 +5,7 @@ namespace Kira.UI
     public class HotbarUI : MonoBehaviour
     {
         [SerializeField]
-        private PopupUI buildingsPopUp;
+        private BuildMenuUI buildingsPopUp;
 
         public void OnBuildingsClicked()
         {

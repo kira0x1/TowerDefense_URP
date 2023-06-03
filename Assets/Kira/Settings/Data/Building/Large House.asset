@@ -13,5 +13,6 @@ MonoBehaviour:
   m_Name: Large House
   m_EditorClassIdentifier: 
   name: Large House
+  icon: {fileID: 21300000, guid: 80c92b039fc1f48489bedf9863f8ff59, type: 3}
   buildingCategory: 0
   tileSize: 1
