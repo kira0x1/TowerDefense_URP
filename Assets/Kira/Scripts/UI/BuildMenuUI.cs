@@ -25,7 +25,7 @@ namespace Kira.UI
             buildingSettings = FindObjectOfType<BuildingSettings>();
         }
 
-        protected override void ShowPanel()
+        protected override void ShowPanel(bool blockRaycasts = true)
         {
             if (!hasPopulated)
             {

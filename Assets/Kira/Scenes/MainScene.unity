@@ -8186,8 +8186,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   headerText: {fileID: 1049951956}
   bodyText: {fileID: 288215790}
-  offsetX: 500
-  offsetY: 0
+  offsetX: -200
+  offsetY: 50
 --- !u!1 &1682067063
 GameObject:
   m_ObjectHideFlags: 0

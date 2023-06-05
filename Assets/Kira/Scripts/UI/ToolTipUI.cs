@@ -59,7 +59,7 @@ namespace Kira.UI
         {
             headerText.text = header;
             bodyText.text = body;
-            ShowPanel();
+            ShowPanel(false);
             tooltipOn = true;
         }
 

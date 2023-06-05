@@ -16,12 +16,12 @@ namespace Kira.UI
             CheckVisible();
         }
 
-        protected virtual void ShowPanel()
+        protected virtual void ShowPanel(bool blockRaycasts = true)
         {
             isVisible = true;
             canvas.alpha = 1f;
             canvas.interactable = true;
-            canvas.blocksRaycasts = true;
+            canvas.blocksRaycasts = blockRaycasts;
         }
 
         protected virtual void HidePanel()
