@@ -25,5 +25,10 @@ namespace Kira.Board
                 originFactory = value;
             }
         }
+
+        public void Recycle()
+        {
+            originFactory.Reclaim(this);
+        }
     }
 }

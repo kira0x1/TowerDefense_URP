@@ -10,6 +10,9 @@ namespace Kira.Board
         [SerializeField]
         private GameBoard board = default;
 
+        [SerializeField]
+        private GameTileContentFactory tileContentFactory = default;
+
         private void OnValidate()
         {
             if (boardSize.x < 2) boardSize.x = 2;
