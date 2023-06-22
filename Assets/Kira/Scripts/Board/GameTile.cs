@@ -9,10 +9,27 @@ namespace Kira.Board
 
         private GameTile north, east, south, west, nextOnPath;
         private int distance;
+        private GameTileContent content;
 
         public bool IsAlternative { get; set; }
 
         public bool HasPath => distance != int.MaxValue;
+
+        public GameTileContent Content
+        {
+            get => content;
+            set
+            {
+                Debug.Assert(value != null, "Null assigned to content");
+                if (content != null)
+                {
+                    content.Recycle();
+                }
+
+                content = value;
+                content.transform.localPosition = transform.position;
+            }
+        }
 
         public GameTile GrowPathNorth() => GrowPathTo(north);
         public GameTile GrowPathEast() => GrowPathTo(east);

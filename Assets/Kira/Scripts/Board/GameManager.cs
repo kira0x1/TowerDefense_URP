@@ -13,6 +13,9 @@ namespace Kira.Board
         [SerializeField]
         private GameTileContentFactory tileContentFactory = default;
 
+        private Camera cam;
+        private Ray TouchRay => cam.ScreenPointToRay(Input.mousePosition);
+
         private void OnValidate()
         {
             if (boardSize.x < 2) boardSize.x = 2;
@@ -21,7 +24,23 @@ namespace Kira.Board
 
         private void Awake()
         {
+            cam = Camera.main;
             board.Initialize(boardSize);
+        }
+
+        private void Update()
+        {
+            if (Input.GetMouseButtonDown(0))
+            {
+                HandleTouch();
+            }
+        }
+
+        private void HandleTouch()
+        {
+            GameTile tile = board.GetTile(TouchRay);
+            if (tile == null) return;
+            tile.Content = tileContentFactory.Get(GameTileContentType.Destination);
         }
     }
 }

@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 
 namespace Kira.Board
@@ -21,7 +20,7 @@ namespace Kira.Board
             if (Physics.Raycast(ray, out RaycastHit hit))
             {
                 int x = (int)(hit.point.x + size.x * 0.5f);
-                int y = (int)(hit.point.y + size.y * 0.5f);
+                int y = (int)(hit.point.z + size.y * 0.5f);
 
                 if (x >= 0 && x < size.x && y >= 0 && y < size.y)
                 {
