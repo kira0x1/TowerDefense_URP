@@ -25,7 +25,7 @@ namespace Kira.Board
         private void Awake()
         {
             cam = Camera.main;
-            board.Initialize(boardSize);
+            board.Initialize(boardSize, tileContentFactory);
         }
 
         private void Update()
@@ -39,8 +39,10 @@ namespace Kira.Board
         private void HandleTouch()
         {
             GameTile tile = board.GetTile(TouchRay);
-            if (tile == null) return;
-            tile.Content = tileContentFactory.Get(GameTileContentType.Destination);
+            if (tile != null)
+            {
+                board.ToggleDestination(tile);
+            }
         }
     }
 }
